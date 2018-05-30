@@ -168,7 +168,9 @@ export const enableBodyScroll = (targetElement: any): void => {
     if (targetElement === firstTargetElement) {
       document.body.removeEventListener('touchstart', handlers.get(targetElement));
       document.body.removeEventListener('touchmove', handlers.get(targetElement));
-      map.delete(targetElement);
+      handlers.delete(targetElement);
+
+      firstTargetElement = null;
     }
 
     targetElement.ontouchstart = null;
