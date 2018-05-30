@@ -103,6 +103,17 @@ export const disableBodyScroll = (targetElement: any, options?: BodyScrollOption
     if (targetElement && !allTargetElements[targetElement]) {
       allTargetElements[targetElement] = targetElement;
 
+      document.body.ontouchstart = (event: HandleScrollEvent) => {
+        if (!targetElement.contains(event.target)) {
+          event.preventDefault();
+        }
+      };
+      document.body.ontouchmove = (event: HandleScrollEvent) => {
+        if (!targetElement.contains(event.target)) {
+          event.preventDefault();
+        }
+      };
+
       targetElement.ontouchstart = (event: HandleScrollEvent) => {
         if (event.targetTouches.length === 1) {
           // detect single touch
@@ -125,6 +136,9 @@ export const disableBodyScroll = (targetElement: any, options?: BodyScrollOption
 
 export const clearAllBodyScrollLocks = (): void => {
   if (isIosDevice) {
+    document.body.ontouchstart = null;
+    document.body.ontouchmove = null;
+
     // Clear all allTargetElements ontouchstart/ontouchmove handlers, and the references
     Object.entries(allTargetElements).forEach(([key, targetElement]: [any, any]) => {
       targetElement.ontouchstart = null;
@@ -144,6 +158,11 @@ export const clearAllBodyScrollLocks = (): void => {
 
 export const enableBodyScroll = (targetElement: any): void => {
   if (isIosDevice) {
+    if (targetElement === firstTargetElement) {
+      document.body.ontouchstart = null;
+      document.body.ontouchmove = null;
+    }
+
     targetElement.ontouchstart = null;
     targetElement.ontouchmove = null;
   } else if (firstTargetElement === targetElement) {
