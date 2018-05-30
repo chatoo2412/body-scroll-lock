@@ -14,7 +14,7 @@ const isIosDevice =
 type HandleScrollEvent = TouchEvent;
 
 let firstTargetElement: any = null;
-const allTargetElements: { [any]: any } = {};
+let allTargetElements: [any] = [];
 let initialClientY: number = -1;
 let previousBodyOverflowSetting;
 let previousDocumentElementOverflowSetting;
@@ -100,8 +100,8 @@ export const disableBodyScroll = (targetElement: any, options?: BodyScrollOption
   if (isIosDevice) {
     // targetElement must be provided, and disableBodyScroll must not have been
     // called on this targetElement before.
-    if (targetElement && !allTargetElements[targetElement]) {
-      allTargetElements[targetElement] = targetElement;
+    if (targetElement && !allTargetElements.includes(targetElement)) {
+      allTargetElements = [...allTargetElements, targetElement];
 
       document.body.ontouchstart = (event: HandleScrollEvent) => {
         if (!targetElement.contains(event.target)) {
@@ -140,11 +140,11 @@ export const clearAllBodyScrollLocks = (): void => {
     document.body.ontouchmove = null;
 
     // Clear all allTargetElements ontouchstart/ontouchmove handlers, and the references
-    Object.entries(allTargetElements).forEach(([key, targetElement]: [any, any]) => {
+    allTargetElements.forEach((targetElement: any) => {
       targetElement.ontouchstart = null;
       targetElement.ontouchmove = null;
 
-      delete allTargetElements[key];
+      allTargetElements = [];
     });
 
     // Reset initial clientY
@@ -165,6 +165,10 @@ export const enableBodyScroll = (targetElement: any): void => {
 
     targetElement.ontouchstart = null;
     targetElement.ontouchmove = null;
+    
+    allTargetElements = allTargetElements.filter(
+      elem => elem !== targetElement,
+    );
   } else if (firstTargetElement === targetElement) {
     restoreOverflowSetting();
 
