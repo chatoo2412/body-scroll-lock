@@ -96,6 +96,8 @@ const handleScroll = (event: HandleScrollEvent, targetElement: any): boolean => 
   return true;
 };
 
+const handlers = new Map();
+
 export const disableBodyScroll = (targetElement: any, options?: BodyScrollOptions): void => {
   if (isIosDevice) {
     // targetElement must be provided, and disableBodyScroll must not have been
@@ -103,16 +105,18 @@ export const disableBodyScroll = (targetElement: any, options?: BodyScrollOption
     if (targetElement && !allTargetElements.includes(targetElement)) {
       allTargetElements = [...allTargetElements, targetElement];
 
-      document.body.ontouchstart = (event: HandleScrollEvent) => {
+      handlers.set(targetElement, event => {
         if (!targetElement.contains(event.target)) {
           event.preventDefault();
         }
-      };
-      document.body.ontouchmove = (event: HandleScrollEvent) => {
-        if (!targetElement.contains(event.target)) {
-          event.preventDefault();
-        }
-      };
+      });
+
+      document.body.addEventListener('touchstart', handlers.get(targetElement), {
+        passive: false,
+      });
+      document.body.addEventListener('touchmove', handlers.get(targetElement), {
+        passive: false,
+      });
 
       targetElement.ontouchstart = (event: HandleScrollEvent) => {
         if (event.targetTouches.length === 1) {
@@ -136,8 +140,11 @@ export const disableBodyScroll = (targetElement: any, options?: BodyScrollOption
 
 export const clearAllBodyScrollLocks = (): void => {
   if (isIosDevice) {
-    document.body.ontouchstart = null;
-    document.body.ontouchmove = null;
+    handlers.forEach(handler => {
+      document.body.removeEventListener('touchstart', handler);
+      document.body.removeEventListener('touchmove', handler);
+    });
+    handlers.clear();
 
     // Clear all allTargetElements ontouchstart/ontouchmove handlers, and the references
     allTargetElements.forEach((targetElement: any) => {
@@ -151,27 +158,26 @@ export const clearAllBodyScrollLocks = (): void => {
     initialClientY = -1;
   } else {
     restoreOverflowSetting();
-
-    firstTargetElement = null;
   }
+
+  firstTargetElement = null;
 };
 
 export const enableBodyScroll = (targetElement: any): void => {
   if (isIosDevice) {
     if (targetElement === firstTargetElement) {
-      document.body.ontouchstart = null;
-      document.body.ontouchmove = null;
+      document.body.removeEventListener('touchstart', handlers.get(targetElement));
+      document.body.removeEventListener('touchmove', handlers.get(targetElement));
+      map.delete(targetElement);
     }
 
     targetElement.ontouchstart = null;
     targetElement.ontouchmove = null;
-    
-    allTargetElements = allTargetElements.filter(
-      elem => elem !== targetElement,
-    );
+
+    allTargetElements = allTargetElements.filter(elem => elem !== targetElement);
   } else if (firstTargetElement === targetElement) {
     restoreOverflowSetting();
-
-    firstTargetElement = null;
   }
+
+  firstTargetElement = null;
 };
