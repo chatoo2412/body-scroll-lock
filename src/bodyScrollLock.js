@@ -165,13 +165,17 @@ export const clearAllBodyScrollLocks = (): void => {
 
 export const enableBodyScroll = (targetElement: any): void => {
   if (isIosDevice) {
-    if (targetElement === firstTargetElement) {
-      document.body.removeEventListener('touchstart', handlers.get(targetElement));
-      document.body.removeEventListener('touchmove', handlers.get(targetElement));
-      handlers.delete(targetElement);
-
-      firstTargetElement = null;
-    }
+    allTargetElements.forEach(function(target) {
+      if (targetElement === target) {
+        document.body.removeEventListener('touchstart', handlers.get(targetElement));
+        document.body.removeEventListener('touchmove', handlers.get(targetElement));
+        handlers.delete(targetElement);
+  
+        if (targetElement === firstTargetElement) {
+          firstTargetElement = null;
+        }
+      }
+    });
 
     targetElement.ontouchstart = null;
     targetElement.ontouchmove = null;
