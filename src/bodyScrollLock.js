@@ -183,7 +183,6 @@ export const enableBodyScroll = (targetElement: any): void => {
     allTargetElements = allTargetElements.filter(elem => elem !== targetElement);
   } else if (firstTargetElement === targetElement) {
     restoreOverflowSetting();
+    firstTargetElement = null;
   }
-
-  firstTargetElement = null;
 };
