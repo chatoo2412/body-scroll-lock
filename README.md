@@ -1,3 +1,5 @@
+**DEPRECATED**
+
 <p align="left"> <img width="675" src="https://raw.githubusercontent.com/willmcpo/body-scroll-lock/master/images/logo.png" alt="Body scroll lock...just works with everything ;-)" /> </p>
 
 ## Why body-scroll-lock ?
